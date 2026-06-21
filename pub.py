@@ -6,14 +6,10 @@ from excel import *
 interval = 0.5
 
 def pub():
-    if check("酒馆") == False:
-        return 2
     click(places["招募"], 2)
     cnt = 0
     while 1:
         cnt += 1
-        if check("开嫖") == False:
-            return 2
         click(places["换一批"], interval)
         click(places["快速"], interval)
         p = SS()
@@ -114,20 +110,4 @@ def unemploy():
     time.sleep(3)
     click(places["确定"], 2)
 
-def login():
-    click([88,17,88,17], 2)
-    back = get_back()
-    if back == "寄1" or back == "寄2":
-        click([88,17,88,17], 1)
-        click(places["地堡"], 10)
-    if back == "HOME":
-        click(places["地堡"], 10)
-    if get_back() != "大厅" and get_back() != "大厅2" and get_back() != "大厅3" :
-        click(places["地堡"], 1)
-    while get_back() != "大厅" and get_back() != "大厅2" and get_back() != "大厅3" :
-        time.sleep(5)
-        if get_back() == "账户":
-            click([278,690,278,690], 2)
-    time.sleep(2)
-    click(places["酒馆"], 2) 
     

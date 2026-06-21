@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+python3 -c "from io import BytesIO; from PIL import Image; import subprocess; from data import ranges; from resize import window_init, ratio_to_screen, _adb_command; window_init(); raw=subprocess.check_output(_adb_command('exec-out','screencap','-p')); im=Image.open(BytesIO(raw)).convert('RGB'); box=ranges[-1]; x1,y1=ratio_to_screen(box[0],box[1]); x2,y2=ratio_to_screen(box[2],box[3]); im.crop((x1,y1,x2,y2)).save('score_range_crop_manual.png'); print('score_range_crop_manual.png', box, (x1,y1,x2,y2))"

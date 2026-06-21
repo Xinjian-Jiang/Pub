@@ -1,50 +1,115 @@
-import win32gui
-import win32con
+import os
+import re
+import subprocess
+import time
 
-def set_window_topmost(window_title):
-    """
-    将指定窗口置顶
+GAME_PACKAGE = os.environ.get("GAME_PACKAGE", "com.taojin.dungeon2")
+WAYDROID_ADB = "192.168.240.112:5555"
+GAME_BOUNDS = None
 
-    参数:
-    - window_title: 窗口的标题（字符串）
-    """
-    # 查找窗口句柄
-    hwnd = win32gui.FindWindow(None, window_title)
-    if hwnd == 0:
-        print(f"未找到窗口: {window_title}")
-        return
+def _adb_command(*args):
+    command = ["adb"]
+    serial = os.environ.get("ADB_SERIAL")
+    if serial:
+        command.extend(["-s", serial])
+    command.extend(args)
+    return command
 
-    # 设置窗口为顶层窗口
-    win32gui.SetWindowPos(
-        hwnd,                                      # 窗口句柄
-        win32con.HWND_TOPMOST,                     # 置顶标志
-        0, 0, 0, 0,                               # x, y, width, height（这里不改变位置和大小）
-        win32con.SWP_NOMOVE | win32con.SWP_NOSIZE # 不改变位置和大小
+def _start_adb_server():
+    subprocess.run(["adb", "start-server"], check=True)
+
+def _start_waydroid():
+    result = subprocess.run(
+        ["waydroid", "status"],
+        capture_output=True,
+        text=True,
     )
-    print(f"窗口 '{window_title}' 已置顶")
+    if "Session:\tRUNNING" not in result.stdout:
+        subprocess.Popen(
+            ["waydroid", "show-full-ui"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        time.sleep(5)
 
+def _has_adb_device():
+    result = subprocess.run(
+        ["adb", "devices"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return any(line.strip().endswith("\tdevice") for line in result.stdout.splitlines())
 
-def set_window_position_and_size(window_title, x, y, width, height):
-    """
-    调整指定窗口的位置和大小
-
-    参数:
-    - window_title: 窗口的标题（字符串）
-    - x: 左上角的 X 坐标
-    - y: 左上角的 Y 坐标
-    - width: 窗口的宽度
-    - height: 窗口的高度
-    """
-    # 查找窗口句柄
-    hwnd = win32gui.FindWindow(None, window_title)
-    if hwnd == 0:
-        print(f"未找到窗口: {window_title}")
+def _ensure_adb_device():
+    _start_waydroid()
+    _start_adb_server()
+    if _has_adb_device():
         return
-    
-    # 调整窗口位置和大小
-    win32gui.MoveWindow(hwnd, x, y, width, height, True)
-    print(f"已调整窗口: {window_title} 到位置 ({x}, {y})，大小为 {width}x{height}")
+
+    subprocess.run(["adb", "connect", WAYDROID_ADB], check=False, capture_output=True, text=True)
+    for _ in range(20):
+        if _has_adb_device():
+            return
+        time.sleep(0.5)
+
+    raise RuntimeError(f"adb 没有在线设备，已尝试连接 {WAYDROID_ADB}")
+
+def _get_screen_size():
+    _ensure_adb_device()
+    result = subprocess.run(
+        _adb_command("shell", "wm", "size"),
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    match = re.findall(r"(\d+)x(\d+)", result.stdout)
+    if not match:
+        raise RuntimeError("无法从 adb shell wm size 获取屏幕尺寸")
+    width, height = match[-1]
+    return int(width), int(height)
 
 def window_init():
-    set_window_topmost("雷电模拟器")
-    set_window_position_and_size("雷电模拟器", 0, 0, int(452*1.25), int(816*1.25))
+    global GAME_BOUNDS
+
+    _ensure_adb_device()
+
+    result = subprocess.run(
+        _adb_command("shell", "dumpsys", "window", "windows"),
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    pattern = rf"Window #\d+ Window\{{[^\n]*{re.escape(GAME_PACKAGE)}[^\n]*\}}:.*?mBounds=Rect\((\d+), (\d+) - (\d+), (\d+)\)"
+    match = re.search(pattern, result.stdout, re.S)
+    if match:
+        GAME_BOUNDS = tuple(map(int, match.groups()))
+        return GAME_BOUNDS
+
+    match = re.search(r"mCurrentFocus=Window\{[^\n]*\s(\S+)/\S+.*?mBounds=Rect\((\d+), (\d+) - (\d+), (\d+)\)", result.stdout, re.S)
+    if match:
+        GAME_BOUNDS = tuple(map(int, match.groups()[1:]))
+        return GAME_BOUNDS
+
+    screen_width, screen_height = _get_screen_size()
+    game_width = round(screen_height * 9 / 16)
+    left = round((screen_width - game_width) / 2)
+    GAME_BOUNDS = (left, 0, left + game_width, screen_height)
+    return GAME_BOUNDS
+
+def _require_game_bounds():
+    if GAME_BOUNDS is None:
+        raise RuntimeError("游戏窗口边界未初始化，请先调用 window_init()")
+    return GAME_BOUNDS
+
+def ratio_to_screen(x, y):
+    left, top, right, bottom = _require_game_bounds()
+    screen_x = round(left + x * (right - left - 1))
+    screen_y = round(top + y * (bottom - top - 1))
+    return screen_x, screen_y
+
+def screen_to_ratio(x, y):
+    left, top, right, bottom = _require_game_bounds()
+    ratio_x = (x - left) / (right - left - 1)
+    ratio_y = (y - top) / (bottom - top - 1)
+    return max(0, min(1, ratio_x)), max(0, min(1, ratio_y))
