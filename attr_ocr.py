@@ -15,11 +15,19 @@ DIGIT_SIZE = (32, 48)
 THRESHOLD = 45
 MIN_MATCH_SCORE = 0.55
 MIN_CONFIDENCE = 0.10
+LEVEL_RANGE = [0.532227, 0.22765, 0.570312, 0.243771]
 
 
-def get_attr(model=None):
+def get_attr(model=None, expected_level=None):
     screenshot = _adb_screenshot()
     templates = _load_templates()
+    if expected_level is not None:
+        level_text = _read_digits(_crop_ratio(screenshot, LEVEL_RANGE), templates)
+        if not level_text:
+            raise ValueError("无法识别等级")
+        level = int(level_text)
+        if level != expected_level:
+            raise ValueError(f"等级校验失败: expected={expected_level}, actual={level}")
     results = []
     for bbox in ranges:
         crop = _crop_ratio(screenshot, bbox)

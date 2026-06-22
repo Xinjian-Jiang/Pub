@@ -39,7 +39,7 @@ def pub():
         unemploy()
         return 1
     click(places["裸属性"], interval)
-    attr0 = get_attr(model)
+    attr0 = get_attr(model, 1)
     print(attr0)
     click(places["总属性"], 2)
 
@@ -82,7 +82,7 @@ def pub():
     click(places["裸属性"], interval)
     attr = []
     try:
-        attr = get_attr(model)
+        attr = get_attr(model, 50)
     except ValueError:
         return 2
     print(attr)
