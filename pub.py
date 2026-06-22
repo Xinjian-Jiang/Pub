@@ -53,11 +53,11 @@ def pub():
     else:
         click(places["转职三"], interval)
     click(places["转职一"], interval)
-    click(places["确定"], 1)
+    click(places["确定"], 2)
 
     for i in range (0, 2):
         click(places["按钮二"], interval)
-    click(places["按钮二"], 1)
+    click(places["按钮二"], 2)
     click(places["按钮三"], interval)
     if paths[direction][1] == 1:
         click(places["转职一"], interval)
@@ -70,15 +70,15 @@ def pub():
 
     for i in range (0, 3):
         click(places["按钮二"], interval)
-    click(places["按钮二"], 1)
+    click(places["按钮二"], 2)
     click(places["按钮三"], interval)
     click(places["转职一"], interval)
     click(places["转职一"], interval)
-    click(places["确定"], 1)
+    click(places["确定"], 2)
 
     for i in range (0, 4):
         click(places["按钮二"], interval)
-    click(places["按钮二"], 1)
+    click(places["按钮二"], 2)
     click(places["裸属性"], interval)
     attr = []
     try:

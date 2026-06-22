@@ -17,10 +17,10 @@
 
 from resize import window_init
 from click import listen_clicks
-from recognize import get_attr, get_model, SS
-from pub import pub
+from recognize import get_model, SS
+from pub import *
+from attr_ocr import get_attr
 
 window_init()
-
 while True:
     pub()
