@@ -29,6 +29,15 @@ def _crop_ratio(screenshot, bbox):
     top, bottom = sorted((y1, y2))
     return screenshot.crop((left, top, right + 1, bottom + 1))
 
+def has_item_red():
+    screen = _adb_screenshot()
+    left, right, y = 1885, 1927, 963
+    for x in range(left, right + 1):
+        r, g, b = screen.getpixel((x, y))
+        if r - g > 100 and r - b > 100:
+            return True
+    return False
+
 def get_model():
     import cv2
     import numpy as np

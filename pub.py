@@ -65,6 +65,8 @@ def pub():
         click(places["转职二"], interval)
     else:
         click(places["转职三"], interval)
+    if has_item_red():
+        raise ValueError("转职道具不足")
     click(places["转职一"], interval)
     click(places["确定"], 1)
 
@@ -73,6 +75,8 @@ def pub():
     click(places["按钮二"], 2)
     click(places["按钮三"], interval)
     click(places["转职一"], interval)
+    if has_item_red():
+        raise ValueError("转职道具不足")
     click(places["转职一"], interval)
     click(places["确定"], 2)
 
