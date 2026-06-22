@@ -6,12 +6,12 @@ from excel import *
 interval = 0.5
 
 def pub():
-    click(places["招募"], 2)
+    click(places["招募"], 1)
     cnt = 0
     while 1:
         cnt += 1
         click(places["换一批"], interval)
-        click(places["快速"], interval)
+        click(places["快速"], 1)
         p = SS()
         if p == 1:
             click(places["英雄一"], interval)
@@ -27,7 +27,7 @@ def pub():
             click(places["招募"], 2)
             cnt = 0
     click(places["按钮二"], interval)
-    click(places["确定"], 1)
+    click(places["确定"], 2)
     click(places["离开"], interval)
 
     click(places["第一个"], interval)
@@ -39,11 +39,12 @@ def pub():
         unemploy()
         return 1
     click(places["裸属性"], interval)
-    attr0 = get_attr()
+    attr0 = get_attr(model)
     print(attr0)
-    click(places["总属性"], 1.5)
+    click(places["总属性"], 2)
 
-    click(places["按钮二"], 1.5)
+    click(places["按钮二"], 2)
+    
     click(places["按钮三"], interval)
     if paths[direction][0] == 1:
         click(places["转职一"], interval)
@@ -52,10 +53,10 @@ def pub():
     else:
         click(places["转职三"], interval)
     click(places["转职一"], interval)
-    click(places["确定"], interval)
+    click(places["确定"], 1)
 
-    for i in range (0, 4):
-        click(places["按钮二"], 0.2)
+    for i in range (0, 2):
+        click(places["按钮二"], interval)
     click(places["按钮二"], 1)
     click(places["按钮三"], interval)
     if paths[direction][1] == 1:
@@ -65,28 +66,28 @@ def pub():
     else:
         click(places["转职三"], interval)
     click(places["转职一"], interval)
-    click(places["确定"], interval)
+    click(places["确定"], 1)
 
-    for i in range (0, 5):
-        click(places["按钮二"], 0.2)
+    for i in range (0, 3):
+        click(places["按钮二"], interval)
     click(places["按钮二"], 1)
     click(places["按钮三"], interval)
     click(places["转职一"], interval)
     click(places["转职一"], interval)
-    click(places["确定"], interval)
+    click(places["确定"], 1)
 
-    for i in range (0, 6):
-        click(places["按钮二"], 0.2)
+    for i in range (0, 4):
+        click(places["按钮二"], interval)
     click(places["按钮二"], 1)
     click(places["裸属性"], interval)
     attr = []
     try:
-        attr = get_attr()
+        attr = get_attr(model)
     except ValueError:
         return 2
     print(attr)
     write_excel([model] + [direction] + attr0 + attr)
-    click(places["总属性"], interval)
+    click(places["总属性"], 2)
     std = standards[direction]
     if is_unemploy(attr, std):
         unemploy()
@@ -105,9 +106,9 @@ def is_unemploy(attr, std):
     return 1
 
 def unemploy():
-    click(places["按钮一"], 1)
-    click(places["确定"], 1)
+    click(places["按钮一"], interval)
+    click(places["确定"], interval)
     time.sleep(3)
-    click(places["确定"], 2)
+    click(places["确定"], 1)
 
     

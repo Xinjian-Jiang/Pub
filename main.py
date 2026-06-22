@@ -21,4 +21,6 @@ from recognize import get_attr, get_model, SS
 from pub import pub
 
 window_init()
-pub()
+
+while True:
+    pub()

@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from data import ranges
+from data import model_score_jobs, ranges, score_coefficients
 from resize import _adb_command, ratio_to_screen
 
 
@@ -17,7 +17,7 @@ MIN_MATCH_SCORE = 0.55
 MIN_CONFIDENCE = 0.10
 
 
-def get_attr():
+def get_attr(model=None):
     screenshot = _adb_screenshot()
     templates = _load_templates()
     results = []
@@ -27,6 +27,8 @@ def get_attr():
         if not text:
             raise ValueError(f"无法识别数字区域: {bbox}")
         results.append(int(text))
+    if model is not None:
+        _validate_score(model, results)
     return results
 
 
@@ -50,7 +52,8 @@ def _read_digits(image, templates):
     for digit_index, box in enumerate(boxes):
         digit_image = _crop_digit(mask, box)
         digit = _match_digit(digit_image, templates)
-        digits.append(digit)
+        if digit is not None:
+            digits.append(digit)
     return "".join(digits)
 
 
@@ -178,13 +181,25 @@ def _match_digit(digit, templates):
         raise ValueError("无法匹配数字")
     confidence = (best_score - best_other_score) / best_score if best_score else -1.0
     if best_score < MIN_MATCH_SCORE:
-        raise ValueError(
-            f"数字模板相似度过低: digit={best_digit} score={best_score:.3f} "
-            f"threshold={MIN_MATCH_SCORE:.3f}"
-        )
+        return None
     if confidence < MIN_CONFIDENCE:
-        raise ValueError(
-            f"数字模板置信度过低: digit={best_digit} confidence={confidence:.3f} "
-            f"same={best_score:.3f} other_digit={best_other_digit} other={best_other_score:.3f}"
-        )
+        return None
     return best_digit
+
+
+def _validate_score(model, values):
+    if len(values) != 8:
+        raise ValueError(f"属性数量异常: {values}")
+    job = model_score_jobs.get(model)
+    if job is None:
+        raise ValueError(f"没有模型评分职业映射: {model}")
+    coefficients = score_coefficients[job]
+    calculated = sum(value * coefficient for value, coefficient in zip(values[:7], coefficients))
+    shown = values[7]
+    if 300 <= shown <= 1050 or shown > 2000:
+        raise ValueError(f"评分落入异常区间: model={model} job={job} score={shown} attrs={values[:7]}")
+    if int(calculated) != shown:
+        raise ValueError(
+            f"评分校验失败: model={model} job={job} attrs={values[:7]} "
+            f"calculated={calculated:.3f} int={int(calculated)} shown={shown}"
+        )
