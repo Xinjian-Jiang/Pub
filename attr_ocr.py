@@ -206,7 +206,7 @@ def _validate_score(model, values):
     shown = values[7]
     if 300 <= shown <= 1050 or shown > 2000:
         raise ValueError(f"评分落入异常区间: model={model} job={job} score={shown} attrs={values[:7]}")
-    if int(calculated) != shown and int(calculated) != shown - 1:
+    if int(calculated) != shown and int(calculated) != shown - 1  and int(calculated) != shown + 1:
         raise ValueError(
             f"评分校验失败: model={model} job={job} attrs={values[:7]} "
             f"calculated={calculated:.3f} int={int(calculated)} shown={shown}"

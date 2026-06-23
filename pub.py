@@ -3,7 +3,7 @@ from data import *
 from recognize import *
 from excel import *
 
-interval = 0.5
+interval = 0.6
 
 def pub():
     click(places["招募"], 1)
@@ -27,10 +27,10 @@ def pub():
             click(places["招募"], 2)
             cnt = 0
     click(places["按钮二"], interval)
-    click(places["确定"], 2)
-    click(places["离开"], interval)
+    click(places["确定"], 3)
+    click(places["离开"], 1)
 
-    click(places["第一个"], interval)
+    click(places["第一个"], 1)
     model = get_model()
     print(model)
     direction = directions[model]
@@ -55,7 +55,7 @@ def pub():
     click(places["转职一"], interval)
     click(places["确定"], 2)
 
-    for i in range (0, 2):
+    for i in range (0, 4):
         click(places["按钮二"], interval)
     click(places["按钮二"], 2)
     click(places["按钮三"], interval)
@@ -68,9 +68,9 @@ def pub():
     if has_item_red():
         raise ValueError("转职道具不足")
     click(places["转职一"], interval)
-    click(places["确定"], 1)
+    click(places["确定"], 2)
 
-    for i in range (0, 3):
+    for i in range (0, 5):
         click(places["按钮二"], interval)
     click(places["按钮二"], 2)
     click(places["按钮三"], interval)
@@ -80,7 +80,7 @@ def pub():
     click(places["转职一"], interval)
     click(places["确定"], 2)
 
-    for i in range (0, 4):
+    for i in range (0, 6):
         click(places["按钮二"], interval)
     click(places["按钮二"], 2)
     click(places["裸属性"], interval)
